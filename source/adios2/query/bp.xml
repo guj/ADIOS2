@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+
+<adios-query>
+
+  <io name="query" file="/Users/junmin/mywork/data/abc.bp">
+    <var name="T">
+      <boundingbox  start="100,200" count="400,2900"/>
+      <!-- <tstep start="1" count="2"/> -->
+
+      <op value="OR">>
+	<range  compare="GT" value="6.6"/>
+	<range  compare="LT" value="-6.6"/> 
+	<op value="AND">
+	  <range  compare="LT" value="10.9"/>
+	  <range  compare="GT" value="10.8"/>
+	</op>
+      </op>
+    </var>
+  </io>  
+
+</adios-query>
+
+
+

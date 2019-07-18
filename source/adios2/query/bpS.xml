@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+
+<adios-query>
+
+  <io name="query" file="bpStream_T1.bp">
+    <var name="v0">
+      <boundingbox  start="100,200" count="400,2900"/>
+      <tstep start="5" count="1"/> 
+
+      <op value="OR">>
+	<range  compare="GT" value="6.6"/>
+	<range  compare="LT" value="-6.6"/> 
+	<op value="AND">
+	  <range  compare="LT" value="10.9"/>
+	  <range  compare="GT" value="10.8"/>
+	</op>
+      </op>
+    </var>
+
+    <var name="v1">
+      <boundingbox  start="100,200" count="100,290"/>
+      <!-- <tstep start="1" count="2"/> -->
+
+      <op value="AND">>
+	<range  compare="LT" value="6.6"/>
+	<range  compare="GT" value="-6.6"/> 
+      </op>
+    </var>
+
+  </io>  
+
+</adios-query>
+
+
+
