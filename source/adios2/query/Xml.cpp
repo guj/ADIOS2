@@ -7,10 +7,11 @@
 #include <adios2.h>
 
 
-#include <pugixml/pugixml/src/pugixml.hpp>
+//#include <pugixml/pugixml/src/pugixml.hpp>
+#include <pugixml.hpp>
 #include <fstream>
 
-#include "xml.h"
+#include "Xml.h"
 #include "Query.h"
 #include "Query.tcc"
 
@@ -177,7 +178,6 @@ namespace adios2
 	  };
 
 
-
 	  const std::string fileContents = lf_FileContents(m_XMLConfigFile);
 	  const pugi::xml_document document = adios2::query::xmlUtil::XMLDocument(fileContents);
     
@@ -204,7 +204,6 @@ namespace adios2
 	  return parameters;
 	};
 	
-
 
 	const pugi::xml_attribute ioName = adios2::query::xmlUtil::XMLAttribute("name", ioNode);
 	const pugi::xml_attribute fileName = adios2::query::xmlUtil::XMLAttribute("file", ioNode);
@@ -234,7 +233,7 @@ namespace adios2
 	  parse_VarNode(variable, currIO, reader);
 
 	reader.Close();
-      }
+      } // parse_IONode
 
 
 

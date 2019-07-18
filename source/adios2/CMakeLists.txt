@@ -89,6 +89,11 @@ add_library(adios2
 
   toolkit/aggregator/mpi/MPIAggregator.cpp
   toolkit/aggregator/mpi/MPIChain.cpp
+
+  query/Query.cpp
+  query/Xml.cpp
+  query/test_xml.cpp
+  query/test_noxml.cpp
 )
 target_include_directories(adios2
   PUBLIC

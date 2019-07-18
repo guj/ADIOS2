@@ -10,7 +10,8 @@
 #include <adios2.h>
 
 
-#include <pugixml/pugixml/src/pugixml.hpp>
+//#include <pugixml/pugixml/src/pugixml.hpp>
+#include <pugixml.hpp>
 #include <fstream>
 
 
@@ -134,6 +135,7 @@ namespace adios2
       bool m_overwrite; // whether or not overwrite existing idx file
       size_t m_recommendedSize; // num elements per block when building blockindex
 
+    public:
       void parse_IONode(const pugi::xml_node &ioNode);
       void parse_VarNode(const pugi::xml_node &node,
 			 adios2::IO &currentIO,
@@ -144,7 +146,7 @@ namespace adios2
 			  adios2::IO &currentIO,
 			  std::string& idxFileName);
       
-      void getIdxFileName(const std::string& input, std::string& idxFileName)
+      static void getIdxFileName(const std::string& input, std::string& idxFileName)
 	{
 
 	  auto lf_endsWith = [&](std::string const &fullString, std::string const &endstr) -> bool {
