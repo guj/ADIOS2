@@ -721,6 +721,23 @@ adios2_engine *adios2_open(adios2_io *io, const char *name,
     return engine;
 }
 
+adios2_engine *adios2_get_engine(adios2_io *io, const char *name)
+{
+    adios2_engine *engine = nullptr;
+    try
+    {
+        adios2::helper::CheckForNullptr(
+            io, "for adios2_io, in call to adios2_open");
+        engine = reinterpret_cast<adios2_engine *>(
+            &reinterpret_cast<adios2::core::IO *>(io)->GetEngine(name));
+    }
+    catch (...)
+    {
+        adios2::helper::ExceptionToError("adios2_open");
+    }
+    return engine;
+}
+
 #ifdef ADIOS2_HAVE_MPI
 adios2_engine *adios2_open_new_comm(adios2_io *io, const char *name,
                                     const adios2_mode mode, MPI_Comm comm)

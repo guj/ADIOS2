@@ -290,6 +290,8 @@ adios2_error adios2_remove_all_attributes(adios2_io *io);
 adios2_engine *adios2_open(adios2_io *io, const char *name,
                            const adios2_mode mode);
 
+adios2_engine *adios2_get_engine(adios2_io *io, const char *name);
+
 #ifdef ADIOS2_HAVE_MPI
 /**
  * Open an Engine to start heavy-weight input/output operations.
