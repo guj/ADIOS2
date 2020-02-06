@@ -10,6 +10,7 @@ add_subdirectory(useCases)
 
 if(ADIOS2_HAVE_MPI)
   add_subdirectory(heatTransfer)
+  add_subdirectory(h5vol)
 endif()
 
 if(ADIOS2_BUILD_EXAMPLES_EXPERIMENTAL)
