@@ -1252,7 +1252,11 @@ void HDF5Common::ReadAttrToIO(core::IO &io)
     hsize_t numAttrs;
     // herr_t ret = H5Gget_num_objs(m_FileId, &numObj);
     H5O_info_t oinfo;
+#if H5_VERSION_GE(1, 13, 0)
+    herr_t ret = H5Oget_info(m_FileId, &oinfo, H5O_INFO_ALL);
+#else
     herr_t ret = H5Oget_info(m_FileId, &oinfo);
+#endif
     if (ret >= 0)
     {
         numAttrs = oinfo.num_attrs;
@@ -1303,8 +1307,12 @@ void HDF5Common::ReadNativeAttrToIO(core::IO &io, hid_t datasetId,
     hsize_t numAttrs;
     // herr_t ret = H5Gget_num_objs(m_FileId, &numObj);
     H5O_info_t oinfo;
-    herr_t ret = H5Oget_info(datasetId, &oinfo);
 
+#if H5_VERSION_GE(1, 13, 0)
+    herr_t ret = H5Oget_info(datasetId, &oinfo, H5O_INFO_ALL);
+#else
+    herr_t ret = H5Oget_info(datasetId, &oinfo);
+#endif
     if (ret >= 0)
     {
         numAttrs = oinfo.num_attrs;
