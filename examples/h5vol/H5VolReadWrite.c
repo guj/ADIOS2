@@ -12,8 +12,8 @@
 
 #include "H5Epublic.h"
 #include "H5VolReadWrite.h"
-#include "error.h"
-#include "util.h"
+//#include "error.h"
+#include "H5VolUtil.h"
 #include <unistd.h> // sleep
 // these are in h5private.h
 #define H5_ATTR_UNUSED /**/

@@ -7,7 +7,7 @@
 //#include "H5Fpkg.h"
 #include "hdf5.h"
 
-#include "error.h"
+#include "H5VolError.h"
 #include "mpi.h"
 #include <assert.h>
 #include <stdio.h>

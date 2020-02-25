@@ -37,3 +37,15 @@ endif()
 
 target_link_libraries(H5VolReadWriteC adios2)
 target_link_libraries(H5VolReadWriteC MPI::MPI_C)
+
+install(FILES H5Vol.h H5VolReadWrite.h H5VolError.h
+   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/adios2/h5vol/
+)
+
+# Library installation
+install(TARGETS adios2_h5vol
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
