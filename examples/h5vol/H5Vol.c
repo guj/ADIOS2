@@ -5,7 +5,7 @@ static hid_t m_VID = -1;
 htri_t H5VL_ADIOS2_isRegistered()
 {
     htri_t is_registered = -1; // FAIL by default
-    is_registered = H5VLis_connector_registered(H5VL_ADIOS2_NAME);
+    is_registered = H5VLis_connector_registered_by_name(H5VL_ADIOS2_NAME);
     return is_registered;
 }
 

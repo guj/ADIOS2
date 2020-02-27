@@ -419,6 +419,13 @@ static herr_t H5VL_adios2_dataset_close(void *dset, hid_t dxpl_id, void **req)
     return 0;
 }
 
+static herr_t H5VL_adios2_introspect_opt_query(void *obj, H5VL_subclass_t cls,
+                                               int opt_type, hbool_t *supported)
+{
+    *supported = 0;
+    return 0;
+}
+
 static const H5VL_class_t H5VL_adios2_def = {
     H5VL_ADIOS2_VERSION,
     (H5VL_class_value_t)H5VL_ADIOS2_VALUE,
@@ -462,6 +469,8 @@ static const H5VL_class_t H5VL_adios2_def = {
         NULL, // H5VL_adios_datatype_commit,           /* commit */
         NULL, // H5VL_adios_datatype_open,             /* open */
         NULL, // H5VL_adios_datatype_get, /* get_size */
+        NULL, // H5VL_adios_datatype_specific,
+        NULL, // H5VL_adios_datatype_optional,
         NULL  // H5VL_adios_datatype_close /* close */
     },
     {/* file_cls */
@@ -494,6 +503,35 @@ static const H5VL_class_t H5VL_adios2_def = {
         NULL, // H5VL_adios_object_get,                 /* get */
         NULL, // H5VL_adios_object_specific, /* specific */
         NULL  // H5VL_adios_object_optional, /* optional */
-    }};
+    },
+    {
+        /* introspect_cls */
+        NULL, // H5VL_pass_through_introspect_get_conn_cls,  /* get_conn_cls */
+        H5VL_adios2_introspect_opt_query, /* opt_query */
+    },
+    {
+        /* request_cls */
+        NULL, /* wait */
+        NULL, /* notify */
+        NULL, /* cancel */
+        NULL, /* specific */
+        NULL, /* optional */
+        NULL  /* free */
+    },
+    {
+        /* blob_cls */
+        NULL, /* put */
+        NULL, /* get */
+        NULL, /* specific */
+        NULL  /* optional */
+    },
+    {
+        /* token_cls */
+        NULL, /* cmp */
+        NULL, /* to_str */
+        NULL  /* from_str */
+    },
+    NULL /*/optional*/
+};
 
 #endif // ADIOS_VOL_WRITER_H
