@@ -158,6 +158,7 @@ static herr_t H5VL_adios2_attr_write(void *attr, hid_t mem_type_id,
 static herr_t H5VL_adios2_attr_get(void *obj, H5VL_attr_get_t get_type,
                                    hid_t dxpl_id, void **req, va_list arguments)
 {
+    printf("  need to think it over about getting attr name/type/etc  from file/group/var");
     return 0;
 }
 
@@ -426,6 +427,9 @@ static herr_t H5VL_adios2_introspect_opt_query(void *obj, H5VL_subclass_t cls,
     return 0;
 }
 
+//
+// Define H5VOL functions
+//
 static const H5VL_class_t H5VL_adios2_def = {
     H5VL_ADIOS2_VERSION,
     (H5VL_class_value_t)H5VL_ADIOS2_VALUE,
