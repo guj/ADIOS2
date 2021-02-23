@@ -56,6 +56,11 @@ if(MSVC)
   )
 endif()
 
+if(NOT MSVC)
+  string(APPEND CMAKE_CXX_COMPILER_FLAGS_DEBUG " -Wall")
+  string(APPEND CMAKE_C_COMPILER_FLAGS_DEBUG " -Wall")
+endif()
+
 #------------------------------------------------------------------------------#
 # Deal with any pre-installation cleanup tasks
 #------------------------------------------------------------------------------#
