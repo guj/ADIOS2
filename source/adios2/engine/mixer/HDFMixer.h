@@ -69,8 +69,8 @@ public:
 private:
     /** Single object controlling H5 buffering */
     // format::H51Writer m_H51Writer;
-    HDFSerialWriter m_HDFSerialWriter;
     HDFVDSWriter m_HDFVDSWriter;
+    HDFSerialWriter m_HDFSerialWriter;
 
     /** single object controlling a vector of Transports from IO AddTransport */
     transportman::TransportMan m_TransportsManager;
