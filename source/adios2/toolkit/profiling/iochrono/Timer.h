@@ -29,40 +29,6 @@ namespace profiling
 static std::chrono::time_point<std::chrono::high_resolution_clock>
     m_ADIOS2ProgStart = std::chrono::high_resolution_clock::now();
 
-class myTimer
-{
-public:
-    myTimer(const std::string &tag, int rank)
-    {
-        m_Tag = tag;
-        m_Rank = rank;
-        m_Start = std::chrono::high_resolution_clock::now();
-    }
-
-    ~myTimer()
-    {
-        m_End = std::chrono::high_resolution_clock::now();
-
-        auto relative = std::chrono::duration_cast<std::chrono::microseconds>(
-                            m_Start - m_ADIOS2ProgStart)
-                            .count();
-        auto micros = std::chrono::duration_cast<std::chrono::microseconds>(
-                          m_End - m_Start)
-                          .count();
-
-        std::cout << "Timer [" << m_Tag << " on rank =" << m_Rank
-                  << "] start:" << relative / 1000.0
-                  << " msec, took:" << micros / 1000.0 << " msec\n";
-
-        std::cout << std::endl;
-    }
-
-private:
-    std::chrono::time_point<std::chrono::high_resolution_clock> m_Start;
-    std::chrono::time_point<std::chrono::high_resolution_clock> m_End;
-    std::string m_Tag;
-    int m_Rank = 0;
-};
 
 class Timer
 {
