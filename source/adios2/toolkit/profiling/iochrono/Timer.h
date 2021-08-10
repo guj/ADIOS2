@@ -43,12 +43,12 @@ public:
     {
         m_End = std::chrono::high_resolution_clock::now();
 
-        double relative = std::chrono::duration_cast<std::chrono::microseconds>(
-                              m_Start - m_ADIOS2ProgStart)
-                              .count();
-        double micros = std::chrono::duration_cast<std::chrono::microseconds>(
-                            m_End - m_Start)
+        auto relative = std::chrono::duration_cast<std::chrono::microseconds>(
+                            m_Start - m_ADIOS2ProgStart)
                             .count();
+        auto micros = std::chrono::duration_cast<std::chrono::microseconds>(
+                          m_End - m_Start)
+                          .count();
 
         std::cout << "Timer [" << m_Tag << " on rank =" << m_Rank
                   << "] start:" << relative / 1000.0
