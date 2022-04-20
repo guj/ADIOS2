@@ -236,6 +236,9 @@ void QueryComposite::BlockIndexEvaluate(adios2::core::IO &io,
 
 bool QueryVar::IsSelectionValid(adios2::Dims &shape) const
 {
+    if (shape.size() == 0)
+      return true;
+
     if (0 == m_Selection.first.size())
         return true;
 
@@ -248,14 +251,6 @@ bool QueryVar::IsSelectionValid(adios2::Dims &shape) const
         return false; // different dimension
     }
 
-    /*
-    for (size_t i = 0; i < shape.size(); i++)
-    {
-        if ((m_Selection.first[i] > shape[i]) ||
-            (m_Selection.second[i] > shape[i]))
-            return false;
-    }
-    */
     return true;
 }
 
@@ -272,7 +267,6 @@ void QueryVar::LoadSelection(const std::string &startStr,
             "dim of startcount does match in the bounding box definition");
     }
 
-    // simpleQ.setSelection(box.first, box.second);
     adios2::Dims shape =
         this->m_Selection.second; // set at the creation for default
     this->SetSelection(start, count);
@@ -308,9 +302,6 @@ void QueryVar::BlockIndexEvaluate(adios2::core::IO &io,
 {
     const DataType varType = io.InquireVariableType(m_VarName);
 
-    // Variable<int> var = io.InquireVariable<int>(m_VarName);
-    // BlockIndex<int> idx(io, reader);
-
     // var already exists when loading query. skipping validity checking
 #define declare_type(T)                                                        \
     if (varType == adios2::helper::GetDataType<T>())                           \
@@ -329,5 +320,139 @@ void QueryVar::BlockIndexEvaluate(adios2::core::IO &io,
         ApplyOutputRegion(touchedBlocks, m_Selection);
     }
 }
+
+
+bool QueryDerived::SetType(DataType d)
+  {
+    if (m_DataType == DataType::None)
+      m_DataType = d;
+
+    if (m_DataType != d)
+      return false;
+    
+    return true;
+  }
+
+
+void QueryDerived::Access()
+  {
+    if (0 == m_VarRef.size())
+      return;
+
+    auto lf_ApplyParser = [&](double v) -> double {
+      double vals[m_VarRef.size()];
+      int  i = 0;
+      for (auto const& vr : m_VarRef) {
+	vals[i] = v;
+	m_MuParser.DefineVar(vr.first, &vals[i]);
+	i++;
+      }
+      return  m_MuParser.Eval();
+    };
+
+
+    try {
+      double pV = lf_ApplyParser(1);
+      double nV = lf_ApplyParser(-1);
+      double zV = lf_ApplyParser(0);
+      
+      if ( (pV - zV) * (zV - nV) > 0 )
+	m_IsMonotonic = true ;
+      else
+	m_IsMonotonic = false;
+    } catch (std::exception& e)
+      {
+	helper::Throw<std::ios_base::failure>(
+					      "Toolkit", "query::QueryDerived", "Access",
+					      "Unable to evaluate derived formula.");
+      }
+  }
+
+
+  /*
+   * Computes min/max of the derived variable using the formula: f
+   * from input xml. 
+   * Support: 
+   *  - when formula is monotolic (for all related variables involved), 
+   *    then min/max is one of f(min_inputs) f(max_inputs)
+   *  - when formula is bell shaped around the original point (0..0),
+   *    then if input is not in the same quadrant, f(original point) will be one of the min/max
+   *
+   */
+void QueryDerived::UpdateMinMax(std::vector<std::pair<double, double> >& input,
+				typename adios2::core::Variable<double>::BPInfo& out)
+  {
+    bool crossedZero = false;
+    
+    double vals[m_VarRef.size()];
+    int i = 0;
+    for (auto const& vr : m_VarRef) {
+      vals[i] = input[i].first;      
+      m_MuParser.DefineVar(vr.first, &vals[i]);
+      i++;
+      if ((input[i].first < 0) && (input[i].second > 0))
+	crossedZero = true;
+    }
+
+    double v1 = m_MuParser.Eval();
+
+    i = 0;
+    for (auto const& vr : m_VarRef) {
+      vals[i] = input[i].second;
+      m_MuParser.DefineVar(vr.first, &vals[i]);
+      i++;
+    }
+
+    double v2 = m_MuParser.Eval();
+    
+    if (crossedZero && !m_IsMonotonic) {
+      out.Max = std::max(std::max(v1,v2), 0.0);
+      out.Min = std::min(std::min(v1,v2), 0.0);
+    } else {
+      out.Max = std::max(v1,v2);
+      out.Min = std::min(v1,v2);
+    }
+    
+    //std::cout<<"   \t "<<out.Min<<",\t"<<out.Max<<std::endl;
+  }
+
+
+
+  
+void QueryDerived::BlockIndexEvaluate(adios2::core::IO &io,
+				      adios2::core::Engine &reader,
+				      std::vector<Box<Dims>> &touchedBlocks)
+{
+#define declare_type(T)							\
+  if (m_DataType == adios2::helper::GetDataType<T>())			\
+    {									\
+      core::Variable<T> *first = io.InquireVariable<T>(m_VarRef.begin()->second); \
+      if (first == nullptr)						\
+	return;								\
+      if (DataType::None == io.InquireVariableType(m_VarName)) {	\
+	core::Variable<double>& vv = io.DefineVariable<double>(m_VarName, first->Shape(), first->m_Start, first->m_Count, first->IsConstantDims()); \
+	vv.m_AvailableStepBlockIndexOffsets = first->m_AvailableStepBlockIndexOffsets; \
+	vv.m_AvailableStepsCount = first->m_AvailableStepsCount;		\
+	vv.m_AvailableShapes = first->m_AvailableShapes;		\
+      }									\
+      core::Variable<double> *var = io.InquireVariable<double>(m_VarName); \
+      BlockIndex<double> idx(*var, io, reader);				\
+      Update<T>(io, reader, idx.m_VarBlocksInfo);			\
+      idx.Evaluate(*this, touchedBlocks);				\
+    }
+
+  ADIOS2_FOREACH_ATTRIBUTE_PRIMITIVE_STDTYPE_1ARG(declare_type)
+#undef declare_type
+
+    if (touchedBlocks.size() > 0)
+    {
+        LimitToSelection(touchedBlocks);
+        ApplyOutputRegion(touchedBlocks, m_Selection);
+    }
+
+}
+
 } // namespace query
 } // namespace adios2
+
+

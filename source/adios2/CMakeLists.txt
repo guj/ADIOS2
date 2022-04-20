@@ -84,6 +84,12 @@ add_library(adios2_core
   toolkit/query/Worker.cpp
   toolkit/query/XmlWorker.cpp
   toolkit/query/BlockIndex.cpp
+  toolkit/query/muparser/src/muParser.cpp
+  toolkit/query/muparser/src/muParserBase.cpp
+  toolkit/query/muparser/src/muParserBytecode.cpp
+  toolkit/query/muparser/src/muParserCallback.cpp
+  toolkit/query/muparser/src/muParserError.cpp
+  toolkit/query/muparser/src/muParserTokenReader.cpp
 
   toolkit/transport/Transport.cpp
   toolkit/transport/file/FileStdio.cpp

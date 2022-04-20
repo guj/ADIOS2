@@ -14,6 +14,7 @@
 #include "adios2/core/Engine.h"
 #include "adios2/core/IO.h"
 #include "adios2/core/Variable.h"
+#include "muparser/include/muParser.h"
 namespace adios2
 {
 namespace query
@@ -34,6 +35,28 @@ enum Relation
     OR,
     NOT
 };
+
+  static const char* m_TermADIOSQuery="adios-query";
+  static const char* m_TermIO="io";
+  static const char* m_TermQuery="query";
+
+  static const char* m_TermVar="var";
+  static const char* m_TermTag="tag";
+  static const char* m_TermDerived="derived";
+  static const char* m_TermFormula="formula";
+
+  static const char* m_TermOp="op";
+  static const char* m_TermName="name";
+  static const char* m_TermPath="path";
+
+  static const char* m_TermRange="range";
+  static const char* m_TermCompare="compare";
+  static const char* m_TermValue="value";
+  static const char* m_TermBB="boundingbox";
+  static const char* m_TermStart="start";
+  static const char* m_TermCount="count";
+  static const char* m_TermComp="comp"; // component
+
 
 adios2::query::Relation strToRelation(std::string relationStr) noexcept;
 
@@ -196,6 +219,110 @@ public:
 
 private:
 }; // class QueryVar
+
+
+//
+//  Processing a variable derived from actual adios vars
+//      e.g. if "x" "y" are adios vars, then
+//        "radius"=sqrt(x**2 + y**2)
+//       defines a derived variable on top of x & y
+//
+//  Assumption in order for derived variable to work with block index
+//     - all the member variables in formula have the same blocks structures
+//        i.e. for each step, there are consuimg the same blocks
+//     - formula needs be either monotonic
+//       or bell shaped around the original point. e.g. x**2
+//       This way it is convenient to compute stats for the derived variables
+//       by appling formula on the max/min/original_point of the underlying variables
+//
+  class QueryDerived: public QueryVar
+{
+public:
+  QueryDerived(const std::string &derivedVarName, const std::string& formula)
+    : QueryVar(derivedVarName), m_Formula(formula)
+  {
+    m_MuParser.SetExpr(formula);
+  }
+
+  ~QueryDerived() {}
+
+  void BlockIndexEvaluate(adios2::core::IO &, adios2::core::Engine &,
+			  std::vector<Box<Dims>> &touchedBlocks);
+
+  void Add(std::string name, std::string varPath)
+  {
+    m_VarRef[name] = varPath;
+  }
+
+  bool SetType(DataType d);
+
+  template<typename T>
+  void
+  Update(adios2::core::IO& io, adios2::core::Engine & reader,
+	 std::vector<typename adios2::core::Variable<double>::BPInfo>& currStepBlocksInfo)
+  {
+    core::Variable<double> *var = io.InquireVariable<double>(m_VarName);
+    core::Variable<T> *first = io.InquireVariable<T>(m_VarRef.begin()->second);
+
+    /*
+    if (m_Selection.first.size() == 0) {
+      adios2::Dims zero(first->Shape().size(), 0);
+      adios2::Dims shape = first->Shape();
+      std::cout<<"  2 no skip  "<<m_VarRef.begin()->second<<" "<<first->Shape()<<std::endl;
+      //SetSelection(zero, shape);
+    }
+    */
+
+    size_t currStep = reader.CurrentStep();
+
+    std::vector<std::vector<std::pair<double, double>>>  minmax;
+
+    for (auto const& vr : m_VarRef) {
+      core::Variable<T> * v = io.InquireVariable<T>(vr.second);
+      std::vector<typename adios2::core::Variable<T>::BPInfo> varBlocksInfo = reader.BlocksInfo(*v, currStep);
+      if (minmax.size() == 0)
+	minmax.resize(varBlocksInfo.size());
+
+      if (varBlocksInfo[0].MinMaxs.size() > 0)
+	helper::Throw<std::ios_base::failure>(
+            "Toolkit", "query::QueryDeerived", "Update",
+            "Currently no support for query on derived variables with sub block level stats");
+
+      for (int i=0; i<varBlocksInfo.size(); i++) {
+	minmax[i].push_back({(double)varBlocksInfo[i].Min, (double)varBlocksInfo[i].Max});
+      }
+    }
+
+    std::vector<typename adios2::core::Variable<T>::BPInfo> varBlocksInfo =
+      reader.BlocksInfo(*first, currStep);
+
+    currStepBlocksInfo = std::vector<typename adios2::core::Variable<double>::BPInfo>(varBlocksInfo.size());
+
+    for (int i=0; i<varBlocksInfo.size(); i++) {
+      currStepBlocksInfo[i].Shape = varBlocksInfo[i].Shape;
+      currStepBlocksInfo[i].Start = varBlocksInfo[i].Start;
+      currStepBlocksInfo[i].Count = varBlocksInfo[i].Count;
+      UpdateMinMax(minmax[i], currStepBlocksInfo[i]);
+    }
+  }
+
+void UpdateMinMax(std::vector<std::pair<double, double> >& input,
+		  typename adios2::core::Variable<double>::BPInfo& out);
+
+void Access();
+
+private:
+  std::string m_Formula;
+  std::map<std::string, std::string> m_VarRef;
+
+  DataType m_DataType = DataType::None;
+
+  mu::Parser m_MuParser;
+  bool m_IsMonotonic = false;
+
+}; // class QueryDerived
+
+
 
 class QueryComposite : public QueryBase
 {

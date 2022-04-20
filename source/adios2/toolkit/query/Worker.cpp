@@ -83,8 +83,8 @@ QueryVar *Worker::GetBasicVarQuery(adios2::core::IO &currentIO,
         if (var)                                                               \
         {                                                                      \
             QueryVar *q = new QueryVar(variableName);                          \
-            adios2::Dims zero(var->Shape().size(), 0);                         \
-            adios2::Dims shape = var->Shape();                                 \
+            adios2::Dims zero(var->Shape().size(), 0);    		       \
+            adios2::Dims shape = var->Shape();				       \
             q->SetSelection(zero, shape);                                      \
             return q;                                                          \
         }                                                                      \
@@ -98,7 +98,6 @@ void Worker::GetResultCoverage(const adios2::Box<adios2::Dims> &outputRegion,
                                std::vector<Box<Dims>> &touchedBlocks)
 {
     touchedBlocks.clear();
-
     if (!m_Query->UseOutputRegion(outputRegion))
     {
         helper::Throw<std::invalid_argument>("Toolkit", "query::Worker",
