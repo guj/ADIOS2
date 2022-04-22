@@ -135,6 +135,10 @@ target_include_directories(adios2_core
     $<BUILD_INTERFACE:${ADIOS2_SOURCE_DIR}/source>
     $<BUILD_INTERFACE:${ADIOS2_BINARY_DIR}/source>
 )
+
+target_include_directories(adios2_core
+  PRIVATE $<BUILD_INTERFACE:${ADIOS2_SOURCE_DIR}/source/adios2/toolkit/query/muparser/include>
+  )
 target_link_libraries(adios2_core PRIVATE adios2sys_interface adios2::thirdparty::pugixml
   adios2::thirdparty::yaml-cpp adios2::thirdparty::nlohmann_json adios2::thirdparty::perfstubs-interface)
 target_link_libraries(adios2_core PUBLIC ${CMAKE_THREAD_LIBS_INIT})
