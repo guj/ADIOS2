@@ -1,0 +1,53 @@
+{
+   "io": {
+      "name": "query",
+      "var": {
+          "name": "distance",
+	  "derived": {
+	      "formula": "px+py-py",
+	      "var": [
+		  {
+		      "name": "px",
+		      "path": "/data/particles/electrons/position/x/__data__"
+		  },
+		  {
+		      "name": "py",
+		      "path": "/data/particles/electrons/position/y/__data__"
+		  }
+
+	      ]
+		  
+	  },
+         "bxoundingbox": {	
+            "start": "1400",
+            "count": "14000"
+         },
+         "op": {		
+            "value": "AND",
+            "range": [
+               {
+                  "compare": "GT",
+                  "value": "-0.05e-06"
+               },
+               {
+                  "compare": "LT",
+                  "value": "0.05e-06"
+               }
+            ],
+            "op": {
+               "value": "OR",
+               "range": [
+                  {
+                     "compare": "LT",
+                     "value": "1"
+                  },
+                  {
+                     "compare": "GT",
+                     "value": "-1"
+                  }
+               ]
+            }
+         }
+      }
+   }
+}

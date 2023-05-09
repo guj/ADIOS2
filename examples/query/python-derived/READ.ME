@@ -1,0 +1,33 @@
+Instructions:
+- Unzip  data.tar.gz
+- compile adios with python
+- set python path
+
+
+Sample usages:
+####################################
+### by default it uses query.xml ###
+####################################
+
+python test.py
+./openpmd.bp
+Using query file:  query.xml
+Num steps:  4
+Step:  0   num blocks:  6
+Step:  1   num blocks:  42
+Step:  2   num blocks:  78
+Step:  3   num blocks:  0
+
+
+##################################
+### try with a derived query   ###
+##################################
+python test.py  Q-derived.xml 
+./openpmd.bp
+Using query file:  Q-derived.xml
+Num steps:  4
+Step:  0   num blocks:  0
+Step:  1   num blocks:  0
+Step:  2   num blocks:  0
+Step:  3   num blocks:  0
+

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<adios-query>
+  <io name="query">
+    
+    <var name="distance">
+      <!-- <boundingbox  start="1400" count="14000"/>  -->
+      <!-- <derived formula="sqrt(px*px + py*py)"> -->
+      <derived formula="px+py-py"> 
+	<var name="px" path="/data/particles/electrons/position/x/__data__"/>
+	<var name="py" path="/data/particles/electrons/position/y/__data__"/> 
+      </derived> 
+    
+      <op value="AND">
+	<range  compare="GT" value="-0.05e-06"/>
+        <range  compare="LT" value="0.05e-06"/>
+      </op>
+    </var>
+    
+  </io>
+</adios-query>

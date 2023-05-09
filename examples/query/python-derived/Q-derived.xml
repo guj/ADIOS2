@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<adios-query>
+  <io name="query">
+    
+  <tag name="qx">
+    <var name="distance">
+      <derived formula="sqrt(px*px + py*py)">
+	<var name="px" path="/data/particles/electrons/position/x/__data__"/>
+	<var name="py" path="/data/particles/electrons/position/y/__data__"/>
+      </derived> 
+
+      <op value="AND">
+	<range  compare="GT" value="-0.05e-06"/>
+        <range  compare="LT" value="0.05e-06"/>
+      </op>
+    </var>
+  </tag>
+
+
+  <tag name="qy">
+    <var name="/data/particles/electrons/position/y/__data__">
+      <op value="AND">
+        <range  compare="GT" value="-0.05e-06"/>
+        <range  compare="LT" value="0.05e-06"/>
+      </op>
+    </var>
+  </tag>
+
+  <query op="AND">
+      <qx/> 
+      <qy/>
+  </query>
+    
+  </io>
+</adios-query>

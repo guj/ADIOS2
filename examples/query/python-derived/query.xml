@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<adios-query>
+  <io name="query">
+    <var name="/data/particles/electrons/position/x/__data__">
+      <!-- <boundingbox  start="1400" count="14000"/>  -->
+      <op value="AND">
+	<range  compare="GT" value="-0.05e-06"/>
+        <range  compare="LT" value="0.05e-06"/>
+      </op>
+    </var>
+    
+  </io>
+</adios-query>
