@@ -203,6 +203,9 @@ public:
 
     void LimitToSelection(std::vector<Box<Dims>> &touchedBlocks)
     {
+      if (m_Selection.first.size() == 0)
+	return;
+
         for (auto it = touchedBlocks.begin(); it != touchedBlocks.end(); it++)
         {
             Box<Dims> overlap = GetIntersection(m_Selection, *it);

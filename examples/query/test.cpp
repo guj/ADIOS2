@@ -70,17 +70,23 @@ int main(int argc, char *argv[])
             // w.GetResultCoverage(tt, touched_blocks);
             std::cout << " ... now can read out touched blocks ... size="
                       << touched_blocks.size() << std::endl;
+	    int counter = 0;
             for (auto n : touched_blocks)
             {
-                std::ostringstream startStr;
-                std::ostringstream countStr;
-                for (size_t k = 0; k < n.first.size(); k++)
+	      counter ++;
+	      if (counter > 10) {
+		std::cout<<" Only prints up to 10 blocks "<<std::endl;
+		break;
+	      }
+	      std::ostringstream startStr;
+	      std::ostringstream countStr;
+	      for (size_t k = 0; k < n.first.size(); k++)
                 {
-                    startStr << n.first[k] << " ";
-                    countStr << n.second[k] << " ";
+		  startStr << n.first[k] << " ";
+		  countStr << n.second[k] << " ";
                 }
-                std::cout << "\t[" << startStr.str() << "]  [" << countStr.str()
-                          << "]" << std::endl;
+	      std::cout << "\t[" << startStr.str() << "]  [" << countStr.str()
+			<< "]" << std::endl;
             }
             reader.EndStep();
         }
