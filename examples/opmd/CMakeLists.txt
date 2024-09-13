@@ -3,12 +3,6 @@
 # accompanying file Copyright.txt for details.
 #------------------------------------------------------------------------------#
 
-add_subdirectory(opmd)
-#add_subdirectory(basics)
-#add_subdirectory(hello)
-#add_subdirectory(plugins)
-#add_subdirectory(simulations)
-#add_subdirectory(useCases)
-if(ADIOS2_USE_Campaign)
-    add_subdirectory(campaign)
+if(ADIOS2_HAVE_MPI)
+  add_subdirectory(8c)
 endif()
