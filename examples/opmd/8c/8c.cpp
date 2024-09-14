@@ -310,6 +310,8 @@ public:
   ADIOSWriteSeries(const std::string& name, MPI_Comm comm);
   ~ADIOSWriteSeries();
 
+  void CheckEnv(std::string const& envName, std::string const& adiosParameter);
+  
   void flush() 
   {
     m_Writer.PerformDataWrite();
@@ -328,7 +330,7 @@ public:
   }
   
   void setupCurrScope(bool useJoinedDim, unsigned long np, unsigned long offset, unsigned long count);
- 
+  
   adios2::ADIOS m_ADIOS;
   adios2::Engine  m_Writer;
   adios2::IO m_WriterIO;
@@ -339,14 +341,31 @@ public:
 private:  
 };
 
+static std::map<std::string, std::string> m_EnvADIOSNames{ {"OPENPMD_ADIOS2_BP5_NumAgg", "NumAggregators"},
+                                                            {"OPENPMD_ADIOS2_BP5_TypeAgg", "AggregationType"} };
+
 ADIOSWriteSeries::ADIOSWriteSeries(const std::string& name, MPI_Comm comm)
   :m_ADIOS(comm)
 {
   //adios2::ADIOS adios(MPI_COMM_WORLD);
   m_WriterIO = m_ADIOS.DeclareIO("Output");
-  
+
+  for (const auto& n : m_EnvADIOSNames)
+    CheckEnv(n.first, n.second);
+
   //m_Writer = m_WriterIO.Open(name, adios2::Mode::Write, MPI_COMM_WORLD);
   m_Writer = adios2::Engine(m_WriterIO.Open(name, adios2::Mode::Write, MPI_COMM_WORLD));
+}
+
+void ADIOSWriteSeries::CheckEnv(std::string const& envName, std::string const& adiosParameterName)
+{
+  char const *env = std::getenv(envName.c_str());
+  if (env == nullptr)
+    return;
+  
+  std::string tmp(env);
+  if (tmp.size() > 0)
+    m_WriterIO.SetParameter(adiosParameterName, tmp);
 }
 
 Extent ADIOSWriteSeries::ProperExtent (unsigned long long n, bool useJoinedDim, bool init) const
@@ -444,8 +463,8 @@ public:
   // default distribution is between 1 - 2 million ptls per rank
     unsigned long  m_PtlMin = 1000000;
     unsigned long  m_PtlMax = 2000000;
-    unsigned long  m_PtlUnit = 1000000;
-
+    unsigned long  m_PtlUnit = 1000000;    
+    
     int m_Steps = 1; //!< num of iterations
     std::string m_Backend = ""; //!< I/O backend by file ending
 
@@ -823,7 +842,7 @@ void BasicParticlePattern::getParticleLayout(unsigned long& offset, unsigned lon
     {
       total += result[i];
       if (i < m_Input.m_MPIRank) {
-    offset += result[i];
+         offset += result[i];
       }
     }
 
