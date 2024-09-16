@@ -244,31 +244,6 @@ createDataCPU(const unsigned long &size, const T &val, const T &increment)
     return E;
 }
 
-#if openPMD_HAVE_CUDA_EXAMPLES
-template <typename T>
-std::shared_ptr<T>
-createDataGPU(const unsigned long &size, const T &val, const T &increment)
-{
-    auto myCudaMalloc = [](size_t mySize) {
-        void *ptr;
-        cudaMalloc((void **)&ptr, mySize);
-        return ptr;
-    };
-    auto deleter = [](T *ptr) { cudaFree(ptr); };
-    auto E = std::shared_ptr<T>{(T *)myCudaMalloc(size * sizeof(T)), deleter};
-
-    T *data = new T[size];
-    for (unsigned long i = 0ul; i < size; i++)
-    {
-        if (increment != 0)
-            data[i] = val + i * increment;
-        else
-            data[i] = val;
-    }
-    cudaMemcpy(E.get(), data, size * sizeof(T), cudaMemcpyHostToDevice);
-    return E;
-}
-#endif
 
 template <typename T>
 std::shared_ptr<T>
@@ -278,11 +253,8 @@ createData(const unsigned long &size, const T &val, const T &increment)
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   Checkpoint c("  CreateData", rank);
 
-#if openPMD_HAVE_CUDA_EXAMPLES
-    return createDataGPU(size, val, increment);
-#else
-    return createDataCPU(size, val, increment);
-#endif
+  return createDataCPU(size, val, increment);
+
 }
 
 /** Find supported backends
@@ -342,7 +314,8 @@ private:
 };
 
 static std::map<std::string, std::string> m_EnvADIOSNames{ {"OPENPMD_ADIOS2_BP5_NumAgg", "NumAggregators"},
-                                                            {"OPENPMD_ADIOS2_BP5_TypeAgg", "AggregationType"} };
+                                                           {"OPENPMD_ADIOS2_ENGINE", "N/A"},  
+                                                           {"OPENPMD_ADIOS2_BP5_TypeAgg", "AggregationType"} };
 
 ADIOSWriteSeries::ADIOSWriteSeries(const std::string& name, MPI_Comm comm)
   :m_ADIOS(comm)
@@ -365,7 +338,14 @@ void ADIOSWriteSeries::CheckEnv(std::string const& envName, std::string const& a
   
   std::string tmp(env);
   if (tmp.size() > 0)
-    m_WriterIO.SetParameter(adiosParameterName, tmp);
+    {
+       if (envName.compare("OPENPMD_ADIOS2_ENGINE") == 0)
+         {
+           m_WriterIO.SetEngine(tmp);
+           return;
+         }
+       m_WriterIO.SetParameter(adiosParameterName, tmp);
+    }
 }
 
 Extent ADIOSWriteSeries::ProperExtent (unsigned long long n, bool useJoinedDim, bool init) const
@@ -784,18 +764,18 @@ void BasicParticlePattern::storeParticles(ADIOSWriteSeries &curr, int &step)
       {
        auto ids = createData<uint64_t>(count, offset, 1);
        auto idVar = curr.m_WriterIO.InquireVariable(curr.m_StrID);
-       curr.m_Writer.Put(idVar, ids.get());
+       curr.m_Writer.Put(idVar, ids.get(), adios2::Mode::Sync);
        
        //currSpecies["id"].storeChunk(ids, ProperExtent(offset, false), {count});
 
        auto charges = createData<double>(count, 0.1 * step, 0.0001);
        auto chargeVar = curr.m_WriterIO.InquireVariable(curr.m_StrCharge);
-       curr.m_Writer.Put(chargeVar, charges.get());
+       curr.m_Writer.Put(chargeVar, charges.get(), adios2::Mode::Sync);
        //currSpecies["charge"].storeChunk(charges, ProperExtent(offset, false), {count});
 
        auto mx = createData<double>(count, 1.0 * step, 0.0002);
        auto posXVar = curr.m_WriterIO.InquireVariable(curr.m_StrPosX);
-       curr.m_Writer.Put(posXVar, mx.get());
+       curr.m_Writer.Put(posXVar, mx.get(), adios2::Mode::Sync);
        //currSpecies["position"]["x"].storeChunk(mx, ProperExtent(offset, false), {count});
       }
 } // storeParticles
